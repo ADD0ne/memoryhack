@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <title>Parse</title>
+  <style>
+    .center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 70%;
+      /* Максимальная ширина страницы в пикселах */
+    }
+  </style>
+</head>
+
+<body>
+
+  <script src="/socket.io.js"></script>
+
+  <script>
+    var socket = io.connect();
+    var g_i = 0;
+    setTimeout(() => {
+      socket.emit('get_photo', g_i);
+    }, 1111);
+
+    function next() {
+      g_i++;
+      socket.emit('get_photo', g_i);
+    }
+
+    function prev() {
+      if (g_i <= 0) {
+        alert('JS не питон, он не понимает что такое array[-1]');
+        return 0;
+      }
+      g_i--;
+      socket.emit('get_photo', g_i);
+    }
+
+    socket.on("respons_photo", (argument) => {
+      console.log(argument);
+      
+
+      if (argument.status == 200) {
+        document.getElementById('len_data').innerHTML = `На данный момент собрано ${argument.len_data} фотографий`;
+
+        document.getElementById('photo').src = argument.data.url;
+        document.getElementById('text').innerHTML = `Дата публикации ${argument.data.date} <br> 
+                                                   Текст <br> ${argument.data.text}`;
+      } else {
+        alert('Ошибка на стороне сервера!')
+      }
+    });
+
+    function del_photo() {
+      socket.emit('del_photo', g_i);
+        
+      setTimeout(() => {
+        next();
+      }, 1111);
+
+    }
+
+  </script>
+  <div class="container-fluid">
+    <div class="row" style="padding: 20px;">
+      <h1 id='len_data'></h1>
+    </div>
+    <div class="row">
+      <div class="col-2">
+        <button onclick="prev()" class="btn btn-secondary">Prev</button>
+      </div>
+
+      <div class="col">
+        <img src='' id="photo" class='center'>
+        <p id='text'></p>
+      </div>
+
+      <div class="col-2">
+        <button onclick="next()" class="btn btn-secondary">Next</button>
+        <br><br><br><br>
+        <button onclick="del_photo()" class="btn btn-danger">del_photo</button>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+
+</html>
